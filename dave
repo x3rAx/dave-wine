@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+SCRIPT="$BASH_SOURCE"
+SCRIPT_DIR="${SCRIPT%/*}"
+REAL_SCRIPT_DIR="$(realpath $SCRIPT_DIR)"
+
+export WINEPREFIX="${REAL_SCRIPT_DIR}/prefix"
+export WINEARCH=win64
+export WINEPATH="$REAL_SCRIPT_DIR"
+
+if [[ $1 == "install" ]]; then
+	mkdir -p $SCRIPT_DIR/prefix
+
+	wineboot --init
+
+	cp "$2" "$WINEPREFIX/drive_c/dave-installer.exe"
+	wine 'C:\dave-installer.exe'
+
+	exit 0
+fi
+
+if [[ ! -e $WINEPREFIX ]]; then
+	echo >&2 'ERROR: Dave is not installed. To install, run:'
+	echo >&2 ''
+	echo >&2 '    ./dave install /path/to/dave-installer.exe'
+	exit 1
+fi
+
+latest_version="$(ls -1 'prefix/drive_c/Infineon/Tools/DAVE IDE/' | sort -Vr | head -n 1)"
+
+wine "C:\\Infineon\\Tools\\DAVE IDE\\${latest_version}\\eclipse\\DAVE.exe"
